@@ -16,6 +16,7 @@ def read_border_data(input_file):
 
     return borderCross
 
+# Merge data with the same Border, Measure, and Date to write report, and calculate running monthly average
 def border_data_analysis(borderCross):
     report=[]
     border_measure_date_string = []
@@ -45,15 +46,17 @@ def border_data_analysis(borderCross):
     report.sort(key=lambda x:x.Value, reverse = True)
     report.sort(key=lambda x:x.Date, reverse = True)            
 
-    # calculate running monthly average
+    # Calculate running monthly average
     for index, entry in enumerate(report):
         border_measure = entry.Border + ',' + entry.Measure
         current_date = entry.Date
         
         date_value = border_measure_string[border_measure]
+
+        # Get all previous values
         previous_values = [value for datestr, value in date_value if datestr<current_date]
         
-        # Get all previous months per border and measure. Use set() to eliminate duplicate month entries.
+        # Get all previous months for each pair of border and measure
         previous_months = set([datestr for datestr,_ in date_value if datestr<current_date])
         
         if previous_months:
@@ -79,24 +82,18 @@ if __name__ == '__main__':
 
     # Namedtuple for reading Border_Crossing_Entry_Data.csv
     BorderCross = collections.namedtuple('BorderCross', 'Port_Name, State, Port_Code, Border, Date, Measure, Value, Location')
-#    BorderCross = collections.namedtuple('BorderCross', 'Port_Name, State, Port_Code, Border, Date, Measure, Value')
+
+    # Namedtuple for reading datasets on BTS website
+    #BorderCross = collections.namedtuple('BorderCross', 'Port_Name, State, Port_Code, Border, Date, Measure, Value')
 
     # Namedtuple for writing report
     Report = collections.namedtuple('Report', 'Border, Date, Measure, Value, Average')
 
-    # read Border_Crossing_Entry_Data.csv
+    # Read Border_Crossing_Entry_Data.csv
     borderCross = read_border_data(input_file)
 
-#    Print borderCross
-    for i in borderCross:
-        print(i)
-
-    print('--------------------------')
-
+    # Generate report
     report = border_data_analysis(borderCross)
-
-    for i in report:
-        print(i)
 
     # Write report
     write_report(report)

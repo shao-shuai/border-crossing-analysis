@@ -8,9 +8,9 @@
 
 ## Solution
 
-### Read input file: read_border_data()
+### read_border_data()
 
-The input file **Border_Crossing_Entry_Data.csv** is read as a list defined as `borderCross`, each element of the list is a namedtuple (BorderCross)  defined as below: 
+`read_border_data()` is used to read input file **Border_Crossing_Entry_Data.csv** as a list defined as `borderCross`, each element of the list is a namedtuple (BorderCross)  defined as below: 
 
 ```python
 BorderCross = collections.namedtuple('BorderCross', 'Port_Name, State, Port_Code, Border, Date, Measure, Value, Location')
@@ -28,11 +28,14 @@ BorderCross(Port_Name='Presidio', State='Texas', Port_Code='2403', Border='US-Me
 BorderCross(Port_Name='Eagle Pass', State='Texas', Port_Code='2303', Border='US-Mexico Border', Date='01/01/2019 12:00:00 AM', Measure='Pedestrians', Value='56810', Location='POINT (-100.49917 28.70889)')
 ```
 
+### border_data_analysis()
 
+`border_data_analysis()` is used to:
 
-### Process the input file to generate running montly average: border_data_analysis
+- merge data entries with the same Border, Date and Measure in `borderCross` into a single entry, and generate `report` based on the merged entries
+- calculate running monly average of each entry in `report`
 
-#### Merge data entries with the same border, date, and measure
+#### Merge data entries with the same Border, Date, and Measure in borderCross
 
 A Report (also a namedtuple) is created for writing running monthly average data.
 
@@ -40,9 +43,7 @@ A Report (also a namedtuple) is created for writing running monthly average data
 Report = collections.namedtuple('Report', 'Border, Date, Measure, Value, Average')
 ```
 
-
-
-`border_measure_date_string` is a list created to store unique string of border, date and measure in `borderCross`. Before looping each element in `borderCross`, whether the border_date_measure string of the element is in `border_measure_date_string` is determined. If no, the element's corresponding fields (Border, Date, Measure, and Value) will be assigned to report plus an average field, and the border_date_measure string will be appended to `border_measure_date_string`. If yes, the Value of the element will be summed up with the value under the same border_date_measure string in the report.
+`border_measure_date_string` is a list created to store unique string of border, date and measure in `borderCross`. Before looping an element in `borderCross`, whether the border_date_measure string of the element is in `border_measure_date_string` is determined. If no, the element's corresponding fields (Border, Date, Measure, and Value) will be assigned to `report` plus an average field of value 0, and the border_date_measure string will be appended to `border_measure_date_string`. If yes, the Value of the element will be summed up with the value under the same border_date_measure string in the `report`.
 
 ```python
 Report(Border='US-Mexico Border', Date=datetime.datetime(2019, 3, 1, 0, 0), Measure='Pedestrians', Value=346158, Average=114487)
@@ -53,11 +54,13 @@ Report(Border='US-Canada Border', Date=datetime.datetime(2019, 2, 1, 0, 0), Meas
 Report(Border='US-Mexico Border', Date=datetime.datetime(2019, 1, 1, 0, 0), Measure='Pedestrians', Value=56810, Average=0)
 ```
 
-
-
 #### Calculate running monthly average
 
-`border_measure_string` is a dictionary to store data entries with the same border and measure, the value of each border and measure string is a list of tuples including `(date, value)` pairs. when looping each element in report, the date of the element will be compared with the date in `(date, value)` pairs to filter out all previous months and the corresponding values. The running monthly is calculated based on the previous months and the values.
+`border_measure_string` is a dictionary with its keys storing unique string of border and measure, the value of each key is a list of tuples including `(date, value)` pairs. when looping an element in `report`, the date of the element will be compared with the date in `(date, value)` pairs to filter out all previous months and the corresponding values. The running monthly is calculated based on the previous months and the values.
+
+### write_report()
+
+`write_report()` is used to write `report` into **report.csv**
 
 ## Comments
 
