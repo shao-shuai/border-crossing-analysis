@@ -11,34 +11,36 @@ def read_border_data(input_file):
     for emp in map(BorderCross._make, csv.reader(open(input_file, "r"))):
         borderCross.append(emp)
     
+    # Remove first row of field names
     borderCross.pop(0)
 
     return borderCross
 
+# Merge data with the same Border, Measure, and Date to write report, and calculate running monthly average
 def border_data_analysis(borderCross):
     report=[]
-    unique_records = dict()
-    unique_border_measures = dict()
+    border_measure_date_string = []
+    border_measure_string = dict()
 
     for entry in borderCross:
         border_measure = entry.Border + ',' + entry.Measure
         unique_record_string = border_measure + ',' + entry.Date
 
-        if unique_record_string not in unique_records.keys():
-            unique_records[unique_record_string] = len(report)
+        if unique_record_string not in border_measure_date_string:
+            border_measure_date_string.append(unique_record_string)
             temp_output = Report(entry.Border, dt.strptime(entry.Date, '%m/%d/%Y %I:%M:%S %p'), entry.Measure, int(entry.Value), 0)
             report.append(temp_output)
                 
         else:
-            record_index = unique_records[unique_record_string]
+            record_index = border_measure_date_string.index(unique_record_string)
             report[record_index]=report[record_index]._replace(Value=report[record_index].Value+int(entry.Value))
         
-        if border_measure not in unique_border_measures:
-            unique_border_measures[border_measure] = []
+        if border_measure not in border_measure_string:
+            border_measure_string[border_measure] = []
     
-        unique_border_measures[border_measure].append((dt.strptime(entry.Date, '%m/%d/%Y %I:%M:%S %p'), int(entry.Value)))
+        border_measure_string[border_measure].append((dt.strptime(entry.Date, '%m/%d/%Y %I:%M:%S %p'), int(entry.Value)))
 
-    # sort
+    # Sort report by Date, Value, Measure, and Border 
     report.sort(key=lambda x:x.Border, reverse = True)
     report.sort(key=lambda x:x.Measure, reverse = True)
     report.sort(key=lambda x:x.Value, reverse = True)
@@ -49,7 +51,7 @@ def border_data_analysis(borderCross):
         border_measure = entry.Border + ',' + entry.Measure
         current_date = entry.Date
         
-        date_value = unique_border_measures[border_measure]
+        date_value = border_measure_string[border_measure]
         previous_values = [value for datestr, value in date_value if datestr<current_date]
         
         # Get all previous months per border and measure. Use set() to eliminate duplicate month entries.
@@ -68,13 +70,8 @@ def write_report(report):
         w.writerows([i.Border, i.Date.strftime('%m/%d/%Y %I:%M:%S %p'), i.Measure, i.Value, i.Average] for i in report)
 
 
-
-
-
 if __name__ == '__main__':
-    #if len(sys.argv)<2:
- #       print("Function usaage: python border_analytics.py ../input/border_crossing.csv ../output/report.csv")
-#      exit 
+
     input_file = sys.argv[1]
     output_file = sys.argv[2]
 
@@ -84,22 +81,15 @@ if __name__ == '__main__':
     # Namedtuple for reading Border_Crossing_Entry_Data.csv
     BorderCross = collections.namedtuple('BorderCross', 'Port_Name, State, Port_Code, Border, Date, Measure, Value, Location')
 #    BorderCross = collections.namedtuple('BorderCross', 'Port_Name, State, Port_Code, Border, Date, Measure, Value')
+
     # Namedtuple for writing report
     Report = collections.namedtuple('Report', 'Border, Date, Measure, Value, Average')
 
-    # read Border_Crossing_Entry_Data.csv
+    # Read Border_Crossing_Entry_Data.csv
     borderCross = read_border_data(input_file)
-
-    # Print borderCross
-    # for i in borderCross:
-    #     print(i)
-
-    # print('--------------------------')
-
+    
+    # Generate report
     report = border_data_analysis(borderCross)
-
-    # for i in report:
-    #     print(i)
 
     # Write report
     write_report(report)
