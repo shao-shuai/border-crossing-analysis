@@ -11,6 +11,7 @@ def read_border_data(input_file):
     for emp in map(BorderCross._make, csv.reader(open(input_file, "r"))):
         borderCross.append(emp)
     
+    # Remove first row of field names
     borderCross.pop(0)
 
     return borderCross
@@ -38,7 +39,7 @@ def border_data_analysis(borderCross):
     
         unique_border_measures[border_measure].append((dt.strptime(entry.Date, '%m/%d/%Y %I:%M:%S %p'), int(entry.Value)))
 
-    # sort
+    # Sort report by Date, Value, Measure, and Border 
     report.sort(key=lambda x:x.Border, reverse = True)
     report.sort(key=lambda x:x.Measure, reverse = True)
     report.sort(key=lambda x:x.Value, reverse = True)
@@ -68,13 +69,8 @@ def write_report(report):
         w.writerows([i.Border, i.Date.strftime('%m/%d/%Y %I:%M:%S %p'), i.Measure, i.Value, i.Average] for i in report)
 
 
-
-
-
 if __name__ == '__main__':
-    #if len(sys.argv)<2:
- #       print("Function usaage: python border_analytics.py ../input/border_crossing.csv ../output/report.csv")
-#      exit 
+
     input_file = sys.argv[1]
     output_file = sys.argv[2]
 
@@ -84,6 +80,7 @@ if __name__ == '__main__':
     # Namedtuple for reading Border_Crossing_Entry_Data.csv
     BorderCross = collections.namedtuple('BorderCross', 'Port_Name, State, Port_Code, Border, Date, Measure, Value, Location')
 #    BorderCross = collections.namedtuple('BorderCross', 'Port_Name, State, Port_Code, Border, Date, Measure, Value')
+
     # Namedtuple for writing report
     Report = collections.namedtuple('Report', 'Border, Date, Measure, Value, Average')
 
@@ -98,8 +95,8 @@ if __name__ == '__main__':
 
     report = border_data_analysis(borderCross)
 
-    # for i in report:
-    #     print(i)
+    for i in report:
+        print(i)
 
     # Write report
     write_report(report)
