@@ -46,6 +46,19 @@ Report = collections.namedtuple('Report', 'Border, Date, Measure, Value, Average
 `border_measure_date_string` is a list created to store unique string of border, date and measure in `borderCross`. Before looping an element in `borderCross`, whether the border_date_measure string of the element is in `border_measure_date_string` is determined. If no, the element's corresponding fields (Border, Date, Measure, and Value) will be assigned to `report` plus an average field of value 0, and the border_date_measure string will be appended to `border_measure_date_string`. If yes, the Value of the element will be summed up with the value under the same border_date_measure string in the `report`.
 
 ```python
+Report(Border='US-Mexico Border', Date=datetime.datetime(2019, 3, 1, 0, 0), Measure='Pedestrians', Value=346158, Average=0)
+Report(Border='US-Canada Border', Date=datetime.datetime(2019, 3, 1, 0, 0), Measure='Truck Containers Full', Value=6483, Average=0)
+Report(Border='US-Canada Border', Date=datetime.datetime(2019, 3, 1, 0, 0), Measure='Trains', Value=19, Average=0)
+Report(Border='US-Mexico Border', Date=datetime.datetime(2019, 2, 1, 0, 0), Measure='Pedestrians', Value=172163, Average=0)
+Report(Border='US-Canada Border', Date=datetime.datetime(2019, 2, 1, 0, 0), Measure='Truck Containers Empty', Value=1319, Average=0)
+Report(Border='US-Mexico Border', Date=datetime.datetime(2019, 1, 1, 0, 0), Measure='Pedestrians', Value=56810, Average=0)
+```
+
+#### Calculate running monthly average
+
+`border_measure_string` is a dictionary with its keys storing unique string of border and measure, the value of each key is a list of tuples including `(date, value)` pairs. when looping an element in `report`, the date of the element will be compared with the date in `(date, value)` pairs to filter out all previous months and the corresponding values. The running monthly is calculated based on the previous months and the values. Below is the final `report`.
+
+```python
 Report(Border='US-Mexico Border', Date=datetime.datetime(2019, 3, 1, 0, 0), Measure='Pedestrians', Value=346158, Average=114487)
 Report(Border='US-Canada Border', Date=datetime.datetime(2019, 3, 1, 0, 0), Measure='Truck Containers Full', Value=6483, Average=0)
 Report(Border='US-Canada Border', Date=datetime.datetime(2019, 3, 1, 0, 0), Measure='Trains', Value=19, Average=0)
@@ -54,9 +67,7 @@ Report(Border='US-Canada Border', Date=datetime.datetime(2019, 2, 1, 0, 0), Meas
 Report(Border='US-Mexico Border', Date=datetime.datetime(2019, 1, 1, 0, 0), Measure='Pedestrians', Value=56810, Average=0)
 ```
 
-#### Calculate running monthly average
 
-`border_measure_string` is a dictionary with its keys storing unique string of border and measure, the value of each key is a list of tuples including `(date, value)` pairs. when looping an element in `report`, the date of the element will be compared with the date in `(date, value)` pairs to filter out all previous months and the corresponding values. The running monthly is calculated based on the previous months and the values.
 
 ### write_report()
 
